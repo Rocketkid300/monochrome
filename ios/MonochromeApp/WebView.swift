@@ -20,6 +20,19 @@ struct WebView: UIViewRepresentable {
         cfg.userContentController.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false))
         cfg.userContentController.add(context.coordinator, name: "diag")
 
+        // On narrow screens (e.g. iPhone 7 Plus with Display Zoom = 375 px) the site's header and tabs clip.
+        // Lay the page out at 414 px and scale it to fit instead.
+        let fit = """
+        (function(){
+          var m = document.querySelector('meta[name=viewport]');
+          if (!m) { m = document.createElement('meta'); m.name = 'viewport'; document.head.appendChild(m); }
+          if (screen.width < 414) {
+            m.content = 'width=414, initial-scale=' + (screen.width / 414).toFixed(4) + ', viewport-fit=cover';
+          }
+        })();
+        """
+        cfg.userContentController.addUserScript(WKUserScript(source: fit, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+
         let web = WKWebView(frame: .zero, configuration: cfg)
         web.isOpaque = false
         web.backgroundColor = .black
@@ -47,7 +60,7 @@ struct WebView: UIViewRepresentable {
             Diag.shared.log("start \(web.url?.absoluteString ?? "?")")
         }
         func webView(_ web: WKWebView, didFinish n: WKNavigation!) {
-            web.evaluateJavaScript("document.title + ' | text=' + (document.body ? document.body.innerText.length : -1)") { r, _ in
+            web.evaluateJavaScript("document.title + ' | text=' + (document.body ? document.body.innerText.length : -1) + ' | innerWidth=' + innerWidth + ' screen=' + screen.width + ' dpr=' + devicePixelRatio") { r, _ in
                 Diag.shared.log("finished \(web.url?.absoluteString ?? "?") title/text: \(r ?? "nil")")
             }
         }
