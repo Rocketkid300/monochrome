@@ -43,9 +43,18 @@ enum ServerURL {
 struct RootView: View {
     @Environment(\.scenePhase) private var phase
     @State private var url = ServerURL.current()
+    @ObservedObject private var diag = Diag.shared
 
     var body: some View {
-        WebView(url: url)
+        ZStack(alignment: .top) {
+            WebView(url: url)
+            if !diag.banner.isEmpty {
+                Text(diag.banner).font(.caption2).foregroundColor(.white).padding(6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.red.opacity(0.85))
+                    .onTapGesture { diag.banner = "" }
+            }
+        }
             .onChange(of: phase) { p in
                 guard p == .active else { return }
                 AudioSession.activate()

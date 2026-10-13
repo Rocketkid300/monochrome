@@ -13,6 +13,13 @@ struct WebView: UIViewRepresentable {
         cfg.allowsAirPlayForMediaPlayback = true
         cfg.websiteDataStore = .default()
 
+        let js = """
+        window.addEventListener('error', function(e){ webkit.messageHandlers.diag.postMessage('JS error: ' + e.message + ' @' + (e.filename||'') + ':' + e.lineno); });
+        window.addEventListener('unhandledrejection', function(e){ webkit.messageHandlers.diag.postMessage('JS rejection: ' + (e.reason && (e.reason.message || e.reason))); });
+        """
+        cfg.userContentController.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+        cfg.userContentController.add(context.coordinator, name: "diag")
+
         let web = WKWebView(frame: .zero, configuration: cfg)
         web.isOpaque = false
         web.backgroundColor = .black
@@ -29,8 +36,31 @@ struct WebView: UIViewRepresentable {
         if context.coordinator.loaded != url { context.coordinator.load(url, in: web) }
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
         var loaded: URL?
+
+        func userContentController(_ c: WKUserContentController, didReceive m: WKScriptMessage) {
+            Diag.shared.log("\(m.body)", error: true)
+        }
+
+        func webView(_ web: WKWebView, didStartProvisionalNavigation n: WKNavigation!) {
+            Diag.shared.log("start \(web.url?.absoluteString ?? "?")")
+        }
+        func webView(_ web: WKWebView, didFinish n: WKNavigation!) {
+            web.evaluateJavaScript("document.title + ' | text=' + (document.body ? document.body.innerText.length : -1)") { r, _ in
+                Diag.shared.log("finished \(web.url?.absoluteString ?? "?") title/text: \(r ?? "nil")")
+            }
+        }
+        func webView(_ web: WKWebView, didFail n: WKNavigation!, withError e: Error) {
+            Diag.shared.log("load failed: \(e.localizedDescription)", error: true)
+        }
+        func webView(_ web: WKWebView, didFailProvisionalNavigation n: WKNavigation!, withError e: Error) {
+            Diag.shared.log("load failed: \(e.localizedDescription)", error: true)
+        }
+        func webViewWebContentProcessDidTerminate(_ web: WKWebView) {
+            Diag.shared.log("web content process terminated", error: true)
+            web.reload()
+        }
 
         func load(_ url: URL, in web: WKWebView) {
             loaded = url

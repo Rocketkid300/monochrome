@@ -17,11 +17,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Tools
         run: brew install xcodegen
-      - name: App icon
-        run: |
-          D=ios/MonochromeApp/Assets.xcassets/AppIcon.appiconset
-          sips -z 1024 1024 -s format jpeg upstream/public/assets/512.png --out $D/tmp.jpg   # jpeg drops alpha (iOS rejects alpha icons)
-          sips -s format png $D/tmp.jpg --out $D/icon-1024.png && rm $D/tmp.jpg
       - name: Generate project
         working-directory: ios
         run: xcodegen generate
