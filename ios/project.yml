@@ -11,7 +11,9 @@ targets:
   Monochrome:
     type: application
     platform: iOS
-    sources: [MonochromeApp]
+    sources:
+      - MonochromeApp
+      - {path: web, type: folder}
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.monochrome
@@ -25,5 +27,6 @@ targets:
         UILaunchScreen: {}
         UIBackgroundModes: [audio]
         MonoURL: $(MONO_URL)
+        NSAppTransportSecurity: {NSAllowsArbitraryLoadsInWebContent: true}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]

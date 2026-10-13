@@ -2,7 +2,9 @@ import SwiftUI
 import WebKit
 
 struct WebView: UIViewRepresentable {
-    let url: URL
+    /// nil = bundled web UI; otherwise load this hosted URL.
+    let remote: URL?
+    private var target: URL { remote ?? BundleSchemeHandler.entry }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -12,6 +14,7 @@ struct WebView: UIViewRepresentable {
         cfg.mediaTypesRequiringUserActionForPlayback = []
         cfg.allowsAirPlayForMediaPlayback = true
         cfg.websiteDataStore = .default()
+        cfg.setURLSchemeHandler(BundleSchemeHandler(), forURLScheme: BundleSchemeHandler.scheme)
 
         let web = WKWebView(frame: .zero, configuration: cfg)
         web.isOpaque = false
@@ -21,12 +24,12 @@ struct WebView: UIViewRepresentable {
         web.allowsBackForwardNavigationGestures = true
         web.navigationDelegate = context.coordinator
         web.uiDelegate = context.coordinator
-        context.coordinator.load(url, in: web)
+        context.coordinator.load(target, in: web)
         return web
     }
 
     func updateUIView(_ web: WKWebView, context: Context) {
-        if context.coordinator.loaded != url { context.coordinator.load(url, in: web) }
+        if context.coordinator.loaded != target { context.coordinator.load(target, in: web) }
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {

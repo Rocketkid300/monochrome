@@ -25,8 +25,9 @@ enum AudioSession {
 enum ServerURL {
     static let key = "server_url"
 
-    /// iOS Settings -> Monochrome -> Server URL, else the build-time MonoURL.
-    static func current() -> URL? {
+    /// Optional override (iOS Settings -> Monochrome -> Server URL, or build-time MonoURL).
+    /// nil means: use the web UI bundled inside the app.
+    static func override() -> URL? {
         let stored = UserDefaults.standard.string(forKey: key)?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let built = (Bundle.main.object(forInfoDictionaryKey: "MonoURL") as? String) ?? ""
@@ -40,37 +41,15 @@ enum ServerURL {
 
 struct RootView: View {
     @Environment(\.scenePhase) private var phase
-    @State private var url = ServerURL.current()
-    @State private var draft = ""
+    @State private var remote = ServerURL.override()
 
     var body: some View {
-        Group {
-            if let url {
-                WebView(url: url)
-            } else {
-                VStack(spacing: 16) {
-                    Text("Monochrome").font(.title).bold()
-                    Text("Enter the HTTPS address where your Monochrome web UI is hosted.")
-                        .multilineTextAlignment(.center).foregroundColor(.secondary)
-                    TextField("https://music.example.ts.net", text: $draft)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.URL)
-                        .autocorrectionDisabled()
-                        .textFieldStyle(.roundedBorder)
-                    Button("Open") {
-                        UserDefaults.standard.set(draft, forKey: ServerURL.key)
-                        url = ServerURL.current()
-                    }.buttonStyle(.borderedProminent)
-                    Text("Change later in iOS Settings → Monochrome.")
-                        .font(.footnote).foregroundColor(.secondary)
-                }.padding(32)
+        WebView(remote: remote)
+            .onChange(of: phase) { p in
+                guard p == .active else { return }
+                AudioSession.activate()
+                let latest = ServerURL.override()
+                if latest != remote { remote = latest }
             }
-        }
-        .onChange(of: phase) { p in
-            guard p == .active else { return }
-            AudioSession.activate()
-            let latest = ServerURL.current()
-            if latest != url { url = latest }
-        }
     }
 }

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       server_url:
-        description: "HTTPS URL of your hosted Monochrome web UI (optional; can be set in iOS Settings)"
+        description: "HTTPS URL of your hosted Monochrome web UI (optional)"
         required: false
         default: ""
 permissions:
@@ -15,6 +15,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build web UI and bundle it into the app
+        working-directory: upstream
+        run: |
+          npm install --no-audit --no-fund
+          npx vite build
+          rm -rf ../ios/web && cp -R dist ../ios/web
       - name: Tools
         run: brew install xcodegen
       - name: App icon

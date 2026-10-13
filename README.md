@@ -2,7 +2,7 @@
 
 Runs the [Monochrome](https://github.com/monochrome-music/monochrome) web UI (`upstream/`) on iPhone
 **without a jailbreak**, either as a PWA or as a sideloaded IPA with native background audio.
-You host the web UI over HTTPS and supply your own HiFi-API endpoint inside it.
+The web UI is bundled inside the IPA (no hosting needed); you supply your own HiFi-API endpoint inside it.
 
 - `upstream/` – Monochrome web UI (Vite PWA)
 - `ios/` – SwiftUI + WKWebView wrapper (XcodeGen project)
