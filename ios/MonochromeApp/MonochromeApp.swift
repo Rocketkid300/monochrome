@@ -25,9 +25,10 @@ enum AudioSession {
 enum ServerURL {
     static let key = "server_url"
 
-    /// Optional override (iOS Settings -> Monochrome -> Server URL, or build-time MonoURL).
-    /// nil means: use the web UI bundled inside the app.
-    static func override() -> URL? {
+    static let official = URL(string: "https://monochrome.st")!
+
+    /// Official Monochrome site, unless overridden (iOS Settings -> Monochrome -> Server URL, or build-time MonoURL).
+    static func current() -> URL {
         let stored = UserDefaults.standard.string(forKey: key)?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let built = (Bundle.main.object(forInfoDictionaryKey: "MonoURL") as? String) ?? ""
@@ -35,21 +36,21 @@ enum ServerURL {
             let s = raw.contains("://") ? raw : "https://" + raw
             if let u = URL(string: s), u.host != nil { return u }
         }
-        return nil
+        return official
     }
 }
 
 struct RootView: View {
     @Environment(\.scenePhase) private var phase
-    @State private var remote = ServerURL.override()
+    @State private var url = ServerURL.current()
 
     var body: some View {
-        WebView(remote: remote)
+        WebView(url: url)
             .onChange(of: phase) { p in
                 guard p == .active else { return }
                 AudioSession.activate()
-                let latest = ServerURL.override()
-                if latest != remote { remote = latest }
+                let latest = ServerURL.current()
+                if latest != url { url = latest }
             }
     }
 }

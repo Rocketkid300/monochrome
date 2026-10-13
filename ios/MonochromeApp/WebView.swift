@@ -2,9 +2,7 @@ import SwiftUI
 import WebKit
 
 struct WebView: UIViewRepresentable {
-    /// nil = bundled web UI; otherwise load this hosted URL.
-    let remote: URL?
-    private var target: URL { remote ?? BundleSchemeHandler.entry }
+    let url: URL
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -14,7 +12,6 @@ struct WebView: UIViewRepresentable {
         cfg.mediaTypesRequiringUserActionForPlayback = []
         cfg.allowsAirPlayForMediaPlayback = true
         cfg.websiteDataStore = .default()
-        cfg.setURLSchemeHandler(BundleSchemeHandler(), forURLScheme: BundleSchemeHandler.scheme)
 
         let web = WKWebView(frame: .zero, configuration: cfg)
         web.isOpaque = false
@@ -24,12 +21,12 @@ struct WebView: UIViewRepresentable {
         web.allowsBackForwardNavigationGestures = true
         web.navigationDelegate = context.coordinator
         web.uiDelegate = context.coordinator
-        context.coordinator.load(target, in: web)
+        context.coordinator.load(url, in: web)
         return web
     }
 
     func updateUIView(_ web: WKWebView, context: Context) {
-        if context.coordinator.loaded != target { context.coordinator.load(target, in: web) }
+        if context.coordinator.loaded != url { context.coordinator.load(url, in: web) }
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
@@ -41,10 +38,15 @@ struct WebView: UIViewRepresentable {
         }
 
         // Links to other sites open in Safari; the app itself stays on the server's host.
+        private func sameSite(_ a: String?, _ b: String?) -> Bool {
+            func root(_ h: String?) -> String { (h ?? "").split(separator: ".").suffix(2).joined(separator: ".") }
+            return root(a) == root(b)
+        }
+
         func webView(_ web: WKWebView, decidePolicyFor action: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             if action.navigationType == .linkActivated,
-               let target = action.request.url, target.host != loaded?.host,
+               let target = action.request.url, !sameSite(target.host, loaded?.host),
                ["http", "https"].contains(target.scheme ?? "") {
                 UIApplication.shared.open(target)
                 decisionHandler(.cancel)

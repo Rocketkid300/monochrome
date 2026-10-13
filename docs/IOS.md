@@ -14,16 +14,13 @@ You still supply your own HiFi-API endpoint inside the web UI's settings.
 
 Caveat: iOS may pause PWA audio when the screen locks. If so, use B.
 
-## B. Sideloaded IPA (self-contained, native background audio)
+## B. Sideloaded IPA (native background audio)
 
-`ios/` is a tiny SwiftUI app. CI builds the upstream web UI and **bundles it inside the IPA**, shown in a
-WKWebView (served from `mono://app/`), with `AVAudioSession.playback` + the `audio` background mode.
-**No web hosting needed.** You only enter your HiFi endpoint inside the Monochrome UI.
+`ios/` is a tiny SwiftUI app that opens the official Monochrome site (https://monochrome.st) in a WKWebView,
+with `AVAudioSession.playback` + the `audio` background mode. Nothing to host.
 
 1. Download `Monochrome.ipa` from Releases (or run the **iOS IPA** workflow).
-2. Install with **Sideloadly** or **AltStore** using your Apple ID (free ID: re-sign every 7 days;
-   paid developer account: 1 year).
-3. Optional: to load a hosted web UI instead, set iOS **Settings -> Monochrome -> Server URL**.
+2. Install with **Sideloadly** or **AltStore** using your Apple ID (free ID: re-sign every 7 days).
+3. Optional: iOS **Settings -> Monochrome -> Server URL** points the app at a different Monochrome instance.
 
-Not tested on a device. Bundled mode needs your HiFi endpoint to allow cross-origin requests (the same
-requirement as the hosted web app).
+Needs internet (it is a streaming site). Not tested on a physical device by the author.

@@ -15,15 +15,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Build web UI and bundle it into the app
-        working-directory: upstream
-        run: |
-          npm install --no-audit --no-fund
-          npx vite build
-          rm -rf ../ios/web && cp -R dist ../ios/web
       - name: Tools
         run: brew install xcodegen
       - name: App icon
@@ -37,10 +28,12 @@ jobs:
       - name: Build (unsigned)
         working-directory: ios
         run: |
+          VER="${GITHUB_REF_NAME#v}"; case "$GITHUB_REF" in refs/tags/v*) ;; *) VER="1.0.0";; esac
           xcodebuild -project Monochrome.xcodeproj -scheme Monochrome -configuration Release \
             -sdk iphoneos -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            MONO_URL="${{ github.event.inputs.server_url }}" build
+            MONO_URL="${{ github.event.inputs.server_url }}" \
+            MARKETING_VERSION="$VER" CURRENT_PROJECT_VERSION="${{ github.run_number }}" build
       - name: Package IPA
         working-directory: ios
         run: |
