@@ -1,0 +1,45 @@
+# Gradle
+.gradle/
+build/
+*.gradle.bak
+
+# Local
+local.properties
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# Build
+.externalNativeBuild
+.cxx/
+
+# Android
+*.apk
+*.aar
+*.jks
+*.keystore
+
+# Kotlin
+*.kt.bak
+
+# OS
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Secrets
+secrets.properties
+
+# Web
+node_modules/
+upstream/dist/
+.kotlin/

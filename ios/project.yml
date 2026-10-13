@@ -1,0 +1,29 @@
+name: Monochrome
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "15.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MONO_URL: ""
+targets:
+  Monochrome:
+    type: application
+    platform: iOS
+    sources: [MonochromeApp]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.monochrome
+        PRODUCT_NAME: Monochrome
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: MonochromeApp/Info.plist
+      properties:
+        CFBundleDisplayName: Monochrome
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio]
+        MonoURL: $(MONO_URL)
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]

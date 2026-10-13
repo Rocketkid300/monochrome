@@ -1,0 +1,39 @@
+name: iOS IPA
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: "HTTPS URL of your hosted Monochrome web UI (optional; can be set in iOS Settings)"
+        required: false
+        default: ""
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: brew install xcodegen
+      - name: App icon
+        run: |
+          D=ios/MonochromeApp/Assets.xcassets/AppIcon.appiconset
+          sips -z 1024 1024 -s format jpeg upstream/public/assets/512.png --out $D/tmp.jpg   # jpeg drops alpha (iOS rejects alpha icons)
+          sips -s format png $D/tmp.jpg --out $D/icon-1024.png && rm $D/tmp.jpg
+      - name: Generate project
+        working-directory: ios
+        run: xcodegen generate
+      - name: Build (unsigned)
+        working-directory: ios
+        run: |
+          xcodebuild -project Monochrome.xcodeproj -scheme Monochrome -configuration Release \
+            -sdk iphoneos -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            MONO_URL="${{ github.event.inputs.server_url }}" build
+      - name: Package IPA
+        working-directory: ios
+        run: |
+          mkdir Payload && cp -R build/Build/Products/Release-iphoneos/Monochrome.app Payload/
+          zip -qr Monochrome.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Monochrome-ipa
+          path: ios/Monochrome.ipa
