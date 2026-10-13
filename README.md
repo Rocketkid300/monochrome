@@ -9,6 +9,6 @@ You host the web UI over HTTPS and supply your own HiFi-API endpoint inside it.
 - `.github/workflows/ios.yml` – builds an unsigned `Monochrome.ipa` on a macOS runner
 - `scripts/build-web.sh` – builds `upstream/dist`
 
-See [docs/IOS.md](docs/IOS.md) for install steps (PWA and Sideloadly/AltStore).
+**Install:** grab `Monochrome.ipa` from [Releases](../../releases) and sideload it with Sideloadly or AltStore. More detail in [docs/IOS.md](docs/IOS.md).
 
 The Galaxy Watch app lives in a separate repo: `monochrome-watch`.
