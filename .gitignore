@@ -43,3 +43,4 @@ secrets.properties
 node_modules/
 upstream/dist/
 .kotlin/
+*.ipa
