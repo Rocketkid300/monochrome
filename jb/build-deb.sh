@@ -12,7 +12,7 @@ APP="$W/ipa/Payload/Monochrome.app"
 VER=${2:-$(/usr/bin/env python3 -c "import plistlib,sys;print(plistlib.load(open('$APP/Info.plist','rb'))['CFBundleShortVersionString'])")}
 ROOT="$W/pkg"; mkdir -p "$ROOT/DEBIAN" "$ROOT/var/jb/Applications"
 cp -R "$APP" "$ROOT/var/jb/Applications/Monochrome.app"
-ldid -S "$ROOT/var/jb/Applications/Monochrome.app/Monochrome"     # fake-sign; Dopamine trusts it
+ldid -S"$(pwd)/entitlements.plist" "$ROOT/var/jb/Applications/Monochrome.app/Monochrome"   # fake-sign with jailbreak-app entitlements
 cat > "$ROOT/DEBIAN/control" <<CTL
 Package: com.rocketkid300.monochrome
 Name: Monochrome
